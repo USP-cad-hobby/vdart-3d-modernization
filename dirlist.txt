@@ -1,0 +1,39 @@
+ Volume in drive C has no label.
+ Volume Serial Number is F4DD-1111
+
+ Directory of c:\Users\Gaming-Z87\source\repos\Projects\Vdart_3D_f90
+
+26-02-2026  15:11    <DIR>          .
+26-02-2026  15:11    <DIR>          ..
+25-02-2026  21:15             1.340 build.bat
+25-02-2026  18:33               509 Compile.bat
+26-02-2026  15:11                 0 dirlist.txt
+25-02-2026  20:15                 0 python
+25-02-2026  19:53    <DIR>          scripts
+25-02-2026  18:27               831 test_vortex.f90
+25-02-2026  20:38    <DIR>          tools
+25-02-2026  18:14             2.024 vdart_aero_mod.f90
+25-02-2026  18:06             1.762 vdart_biot_mod.f90
+25-02-2026  18:49             3.734 vdart_bsa_mod.f90
+24-02-2026  15:14             2.475 vdart_io_mod.f90
+24-02-2026  15:01               400 vdart_kinds_mod.f90
+25-02-2026  19:44             4.658 vdart_state_mod.f90
+25-02-2026  18:25             2.274 vdart_vortex_mod.f90
+              12 File(s)         20.007 bytes
+
+ Directory of c:\Users\Gaming-Z87\source\repos\Projects\Vdart_3D_f90\scripts
+
+25-02-2026  19:53    <DIR>          .
+25-02-2026  19:53    <DIR>          ..
+25-02-2026  19:53               917 check_duplicate_modules.ps1
+               1 File(s)            917 bytes
+
+ Directory of c:\Users\Gaming-Z87\source\repos\Projects\Vdart_3D_f90\tools
+
+25-02-2026  20:38    <DIR>          .
+25-02-2026  20:38    <DIR>          ..
+               0 File(s)              0 bytes
+
+     Total Files Listed:
+              13 File(s)         20.924 bytes
+               8 Dir(s)  139.409.563.648 bytes free
