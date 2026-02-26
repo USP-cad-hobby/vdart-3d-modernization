@@ -1,0 +1,59 @@
+# Fortran compiled objects and libraries
+*.o
+*.a
+*.so
+*.mod
+*.smod
+
+# Fortran executables
+*.exe
+vdart_app
+test_vortex
+test_nethas
+test_wind
+test_forces
+
+# Temporary/backup files
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+*.project
+*.cproject
+
+# Visual Studio
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+
+# Build artifacts
+build/
+dist/
+*.dSYM/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Data/Output files
+*.dat
+*.out
+output/
+results/
