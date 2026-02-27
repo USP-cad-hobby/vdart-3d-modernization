@@ -2,7 +2,7 @@
 ! Project: VDaRT (Darrieus 3D)
 ! Purpose: Runtime state container replacing COMMON blocks (allocatable arrays).
 ! Author: U.S.Paulsen
-! Date: 2026-02-26
+! Date: 2026-02-27
 ! SPDX-License-Identifier: MIT
 
 module vdart_state_mod
@@ -18,6 +18,7 @@ module vdart_state_mod
   public :: GAMME, SWB, UREL, ALFA, ALFAF, CL, CD
   public :: H1, H2, V1, V2, VIND, BLSNIT
   public :: DSPAN, BETA, FI0, CRANK, RS
+  public :: FR, FT, FB
   public :: POINT, HAS, ITALX, ITALY, ITALZ
 
   integer :: NB, NOL, KMNET, NPSI, IR, IRUN, KMAKS
@@ -46,6 +47,9 @@ module vdart_state_mod
   real(dp), allocatable :: FI0(:)
   real(dp), allocatable :: CRANK(:)
   real(dp), allocatable :: RS(:,:)
+  real(dp), allocatable :: FR(:,:,:)
+  real(dp), allocatable :: FT(:,:,:)
+  real(dp), allocatable :: FB(:,:,:)
   real(dp), allocatable :: POINT(:,:,:,:)
   real(dp), allocatable :: HAS(:,:,:,:)
 
@@ -217,6 +221,27 @@ contains
     end if
     RS = 0.0_dp
 
+    allocate( FR(NB, NOL, KMNET), stat=ios )
+    if (ios /= 0) then
+      ierr = 20
+      return
+    end if
+    FR = 0.0_dp
+
+    allocate( FT(NB, NOL, KMNET), stat=ios )
+    if (ios /= 0) then
+      ierr = 21
+      return
+    end if
+    FT = 0.0_dp
+
+    allocate( FB(NB, NOL, KMNET), stat=ios )
+    if (ios /= 0) then
+      ierr = 22
+      return
+    end if
+    FB = 0.0_dp
+
   end subroutine allocate_state
 
   subroutine deallocate_state()
@@ -238,6 +263,9 @@ contains
     if (allocated(FI0))    deallocate(FI0)
     if (allocated(CRANK))  deallocate(CRANK)
     if (allocated(RS))     deallocate(RS)
+    if (allocated(FR))     deallocate(FR)
+    if (allocated(FT))     deallocate(FT)
+    if (allocated(FB))     deallocate(FB)
     if (allocated(POINT))  deallocate(POINT)
     if (allocated(HAS))    deallocate(HAS)
     NB = 0

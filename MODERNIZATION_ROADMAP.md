@@ -1,196 +1,132 @@
 # VDaRT Modernization Roadmap
 
-## Overview
-Systematic conversion of legacy Fortran 77 code (vdart_3d_R5.FOR) to modern Fortran 90+ with GPU acceleration (OpenACC/OpenMP offload).
+**Project**: Modernization of VDaRT 3D Darrieus rotor CFD code  
+**Status**: Active Development  
+**Last Updated**: February 27, 2026
 
 ---
 
-## Completed Phases ✅
+## Phase 1: Core Refactoring ✅ COMPLETE
 
-### Phase 0: Foundation (COMPLETE)
-- [x] `vdart_kinds_mod.f90` - Precision & constants
-- [x] `vdart_state_mod.f90` - Dynamic state container (replaces COMMON blocks)
-- [x] `vdart_aero_mod.f90` - Aerodynamics helpers (interpolation, ideal polar)
-- [x] `vdart_biot_mod.f90` - Biot-Savart kernel (GPU-ready)
-- [x] `vdart_bsa_mod.f90` - Induced velocity summation
-- [x] `vdart_io_mod.f90` - Safe I/O helpers
-- [x] `test_vortex.f90` - Basic test suite
+**Goal**: Convert legacy Fortran 77 to modern Fortran 90+ with modules and allocatable arrays.
 
-**Status:** ✅ COMPLETE & TESTED
+### ✅ Completed Tasks
 
----
+| Task | Module | Status | Date |
+|------|--------|--------|------|
+| Precision & constants | `vdart_kinds_mod` | ✅ Complete | Feb 2026 |
+| File I/O utilities | `vdart_io_mod` | ✅ Complete | Feb 2026 |
+| Biot-Savart law | `vdart_biot_mod` | ✅ Complete | Feb 2026 |
+| Aerodynamic polars | `vdart_aero_mod` | ✅ Complete | Feb 2026 |
+| State management | `vdart_state_mod` | ✅ Complete | Feb 2026 |
+| Induced velocities (mesh) | `vdart_bsa_mod` | ✅ Complete | Feb 2026 |
+| Relative velocity/AOA | `vdart_wind_mod` | ✅ Complete | Feb 27, 2026 |
+| Move vortex positions | `vdart_flyt_mod` | ✅ Complete | Feb 27, 2026 |
+| Compute blade forces | `vdart_forces_mod` | ✅ Complete | Feb 27, 2026 |
+| Blade geometry generator | `vdart_blad_mod` | ✅ Complete | Feb 27, 2026 |
+| Mesh initialization | `vdart_start_mod` | ✅ Complete | Feb 27, 2026 |
+| Wake velocities | `vdart_nethas_mod` | ✅ Complete | Feb 27, 2026 |
+| Circulation solver | `vdart_vortex_mod` | ✅ Complete | Feb 27, 2026 |
+| Main solver loop | `vdart_solver_mod` | ✅ Complete | Feb 27, 2026 |
+| Build infrastructure | `build.bat`, layout checker | ✅ Complete | Feb 2026 |
 
-## In-Progress Phases 🚧
-
-### Phase 1: Wake Mesh & Velocity (PLANNED)
-**Objective:** Port velocity computation routines with GPU offload support
-
-- **NETHAS Modernization** → `vdart_nethas_mod.f90`
-  - [ ] Dynamic arrays for wake mesh
-  - [ ] Mirror symmetry (Phase 1/2 decomposition)
-  - [ ] OpenACC `!$acc parallel loop` annotations
-  - [ ] Integrate with main driver
-  - [ ] Validate vs. legacy output
-  - [ ] Add performance profiling
-
-**Target Date:** March 15, 2026  
-**Related Issue:** #1 (Modernize NETHAS)
+**Total Modules Converted**: 14 / 14 core modules
 
 ---
 
-## Planned Phases 📋
+## Phase 2: Integration & Validation 🚧 IN PROGRESS
 
-### Phase 2: Aerodynamic Forces (PLANNED)
-**Target Legacy Code:** WIND, FORCES subroutines
+**Goal**: Wire modules into working end-to-end simulation and validate against legacy results.
 
-#### Routine: WIND
-- Convert to `vdart_wind_mod.f90`
-- Compute relative velocity at blade sections
-- OpenACC offload for triple loop (I, J, K)
-- Support blade pitch control (`FI0DOT`)
+### 🚧 Current Tasks
 
-#### Routine: FORCES
-- Convert to `vdart_forces_mod.f90`
-- Compute normal/tangential loads from CL/CD
-- Distribute loads in radial/tangential/axial directions
+- [ ] Create main program (`main.f90`) that calls solver with realistic test case
+- [ ] Set up test case: 3-blade Darrieus rotor (H=5m, D=3m)
+- [ ] Run simulation and compare with legacy VDaRT output
+- [ ] Validate forces, torque, power coefficient
 
-**Target Date:** April 1, 2026  
-**Status:** Waiting for Phase 1 completion  
-**Related Issues:** #2 (WIND), #3 (FORCES)
+### 📋 Planned Tasks
+
+- [ ] Add structured output (CSV, VTK, HDF5)
+- [ ] Implement post-processing utilities
+- [ ] Create regression test suite
+- [ ] Document physics and numerical methods
 
 ---
 
-### Phase 3: Vortex Iteration Solver (PLANNED)
-**Target Legacy Code:** VORTEX subroutine
+## Phase 3: Performance Optimization 📋 PLANNED
 
-- Enhanced `vdart_vortex_mod.f90`
-  - Iterative bound circulation solver
-  - GPU-accelerated summation over wake
-  - Convergence tolerancing & diagnostics
-  - Support non-uniform blade meshes
+**Goal**: Profile code, optimize hot paths, prepare for GPU acceleration.
 
-**Target Date:** April 15, 2026  
-**Status:** Depends on Phase 1/2  
-**Related Issue:** #4
+### Planned Tasks
+
+- [ ] Profile with Intel VTune or gprof
+- [ ] Optimize Biot-Savart loop (most expensive)
+- [ ] Add OpenMP threading for multi-core CPU
+- [ ] Benchmark: target 5-10× speedup vs. legacy
 
 ---
 
-### Phase 4: Main Driver & Integration (PLANNED)
-**Objective:** Orchestrate simulation pipeline
+## Phase 4: GPU Acceleration 📋 PLANNED
 
-- `vdart_main.f90` - Top-level control
-- `vdart_simulation.f90` - Time-stepping loop
-- Full pipeline: NETHAS → WIND → FORCES → VORTEX
-- File I/O and output formatting
-- Validation/regression tests vs. legacy code
+**Goal**: Port computational kernels to GPU using OpenACC.
 
-**Target Date:** May 1, 2026  
-**Status:** Deferred until Phases 1-3 stable  
-**Related Issue:** #5
+### Planned Tasks
+
+- [ ] Add OpenACC directives to BSA, BIOT loops
+- [ ] Test on NVIDIA GPU (A100, RTX 4090, etc.)
+- [ ] Optimize data movement (minimize host-device transfers)
+- [ ] Benchmark GPU vs. CPU performance
 
 ---
 
-### Phase 5: GPU Performance Tuning (PLANNED)
-**Objective:** Optimize kernel performance
+## Phase 5: Advanced Features 📋 FUTURE
 
-- Profile BIOT-Savart kernel
-- Tune OpenACC loop schedules (collapse, chunk sizes)
-- Memory bandwidth analysis
-- Compare nvfortran vs. gfortran+omp offload
-- Benchmark speedup vs. legacy (2-3D scaling)
+**Goal**: Add modern capabilities beyond legacy code.
 
-**Target Date:** May 15, 2026  
-**Status:** Post-integration  
-**Related Issue:** #6
+### Planned Tasks
 
----
-
-### Phase 6: Documentation & Release (PLANNED)
-**Objective:** Final deliverable
-
-- Comprehensive README + migration guide
-- Doxygen/doc comments on all routines
-- GPU compilation guide (gfortran, nvfortran, ifort)
-- Example cases + CI/CD tests
-- CHANGELOG and release notes
-- Tag v1.0 release
-
-**Target Date:** June 1, 2026  
-**Status:** Final phase  
-**Related Issue:** #7
+- [ ] Dynamic mesh refinement
+- [ ] Parallel I/O (MPI)
+- [ ] Python bindings (f2py or pybind11)
+- [ ] Web-based visualization (ParaView, VTK.js)
+- [ ] Coupled FSI (fluid-structure interaction)
 
 ---
 
-## Key Metrics & Milestones
+## Milestones
 
-| Phase | Target Date | Files | Tests | GPU Ready? | Status |
-|-------|-------------|-------|-------|-----------|--------|
-| Phase 0 | ✅ 2026-02-24 | 7 | 1 | Yes | ✅ DONE |
-| Phase 1 | 2026-03-15 | +1 | +2 | Yes | 📋 PLANNED |
-| Phase 2 | 2026-04-01 | +2 | +3 | Yes | 📋 PLANNED |
-| Phase 3 | 2026-04-15 | +1 | +2 | Yes | 📋 PLANNED |
-| Phase 4 | 2026-05-01 | +2 | +5 | Yes | 📋 PLANNED |
-| Phase 5 | 2026-05-15 | 0 | +3 | Yes | 📋 PLANNED |
-| Phase 6 | 2026-06-01 | +3 | +1 | Yes | 📋 PLANNED |
-
----
-
-## GitHub Tracking
-
-### Branches
-- `main` - Stable, integrated, tested code
-- `feature/modernize-nethas` - Phase 1 (NETHAS)
-- `feature/modernize-wind-forces` - Phase 2 (WIND, FORCES)
-- `feature/modernize-vortex` - Phase 3 (VORTEX iteration)
-- `feature/main-driver` - Phase 4 (Main + integration)
-
-### Issues
-Each phase has a dedicated issue with checklist items linking to PRs.
-
-### Pull Requests
-Every modernized module gets a dedicated PR with:
-- Description linking to legacy source
-- Tests validating correctness
-- Performance metrics (if GPU-related)
-- Links to related issues
+| Milestone | Target | Status |
+|-----------|--------|--------|
+| Core modules complete | Feb 2026 | ✅ DONE |
+| Working demo program | Mar 2026 | 🚧 In Progress |
+| Validation complete | Mar 2026 | 📋 Planned |
+| OpenMP threading | Apr 2026 | 📋 Planned |
+| GPU acceleration (OpenACC) | May 2026 | 📋 Planned |
+| Production release v1.0 | Jun 2026 | 📋 Planned |
 
 ---
 
-## Development Checklist
+## Known Issues / Tech Debt
 
-For each new module `vdart_XXX_mod.f90`:
-
-- [ ] Module created with clear docs & headers
-- [ ] All dependencies imported (vdart_kinds_mod, vdart_state_mod, etc.)
-- [ ] Public/private interface clearly declared
-- [ ] GPU directives (`!$acc` or `!$omp target`) added for hot loops
-- [ ] Error handling (ierr codes) for all edge cases
-- [ ] Unit test written in `test_vdart_XXX.f90`
-- [ ] Validated vs. legacy code output (< 1e-10 rel. error)
-- [ ] Committed and pushed to feature branch
-- [ ] PR created with description and results
-- [ ] Code review / self-review completed
-- [ ] Merged to main
+- [ ] `vdart_aero_mod`: Only ideal polar implemented; full CLCD table reader needed
+- [ ] `vdart_bsa_mod`: INDI parameter logic could be simplified
+- [ ] `vdart_solver_mod`: Output summary is placeholder; needs full torque calculation
+- [ ] Error handling: Most modules print warnings but don't propagate ierr consistently
+- [ ] No unit tests yet
 
 ---
 
-## Notes & References
+## Dependencies
 
-- **Legacy source:** `vdart_3d_R5.FOR` (original Fortran 77 code, ~2500 lines)
-- **Modern style guide:** Fortran 2008+ free-form, allocatable arrays, modules, no COMMON blocks
-- **GPU target:** NVIDIA GPUs (via nvfortran, gfortran+OpenACC, or ifx+OpenMP offload)
-- **Testing standard:** Validate numerical equivalence with legacy within 1e-10 relative error
-- **Compiler support:** ifx (Windows/VS 2026), gfortran (Linux/macOS), nvfortran (NVIDIA specialist)
+- **Compiler**: Intel Fortran (ifx) or gfortran 10+
+- **Build**: Python 3.8+ (for layout checker)
+- **GPU** (future): NVIDIA CUDA Toolkit, OpenACC-capable compiler
 
 ---
 
-## Contact & Questions
+## References
 
-- **Project:** VDaRT Modernization (Darrieus 3D Rotor)
-- **Owner:** USP-cad-hobby
-- **Repository:** [USP-cad-hobby/vdart-3d-modernization](https://github.com/USP-cad-hobby/vdart-3d-modernization)
-- **Status:** Active development
-
----
-
-*Last Updated: 2026-02-26*
+- Original VDaRT code: `vdart_3d_R5.FOR`
+- Fortran 90 standard: ISO/IEC 1539-1:1997
+- OpenACC 3.0 specification
