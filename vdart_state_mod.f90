@@ -2,7 +2,7 @@
 ! Project: VDaRT (Darrieus 3D)
 ! Purpose: Runtime state container replacing COMMON blocks (allocatable arrays).
 ! Author: U.S.Paulsen
-! Date: 2026-02-25
+! Date: 2026-02-26
 ! SPDX-License-Identifier: MIT
 
 module vdart_state_mod
@@ -12,37 +12,49 @@ module vdart_state_mod
   public :: allocate_state, deallocate_state
   public :: allocate_mesh, deallocate_mesh
   public :: NB, NOL, KMNET, NPSI, IR, IRUN, KMAKS
+  public :: RO, ANY
   public :: C, DTETA, DT, OMEGA, EPS1, RC, HSTAR, FI0DOT, UINF, BOOLPRINT
+  public :: H0, A, B, BSAF
   public :: GAMME, SWB, UREL, ALFA, ALFAF, CL, CD
-  public :: H1, POINT, HAS, ITALX, ITALY, ITALZ
+  public :: H1, H2, V1, V2, VIND, BLSNIT
+  public :: DSPAN, BETA, FI0, CRANK, RS
+  public :: POINT, HAS, ITALX, ITALY, ITALZ
 
-  integer :: NB = 0, NOL = 0, KMNET = 0, NPSI = 0, IR = 0, IRUN = 0, KMAKS = 0
-  integer :: ITALX = 0, ITALY = 0, ITALZ = 0
-  real(dp) :: C = 0.0_dp, DTETA = 0.0_dp, DT = 0.0_dp, OMEGA = 0.0_dp
-  real(dp) :: EPS1 = 1.0e-6_dp, RC = 0.0_dp, HSTAR = 0.0_dp, FI0DOT = 0.0_dp
-  real(dp) :: UINF = 0.0_dp
-  logical :: BOOLPRINT = .false.
+  integer :: NB, NOL, KMNET, NPSI, IR, IRUN, KMAKS
+  integer :: ITALX, ITALY, ITALZ
+  
+  real(dp) :: RO, ANY
+  real(dp) :: C, DTETA, DT, OMEGA, EPS1, RC, HSTAR, FI0DOT, UINF
+  real(dp) :: H0, A, B, BSAF
+  logical :: BOOLPRINT
 
-  ! Allocatable arrays sized at runtime
-  real(dp), allocatable :: GAMME(:,:,:)    ! (NB, NOL, KMNET)    - bound/shedded circulation
-  real(dp), allocatable :: SWB(:,:,: )     ! (NB, NOL, 3)        - downwash
-  real(dp), allocatable :: UREL(:,:)       ! (NB, NOL)
-  real(dp), allocatable :: ALFA(:,:)       ! (NB, NOL)
-  real(dp), allocatable :: ALFAF(:,:)      ! (NB, NOL)
-  real(dp), allocatable :: CL(:,:)         ! (NB, NOL)
-  real(dp), allocatable :: CD(:,:)         ! (NB, NOL)
-
-  ! Mesh / position arrays (allocate via allocate_mesh)
-  real(dp), allocatable :: H1(:,:,:,:)     ! (NB, NOL, KMNET, 3)  - point positions per blade/snippet/k/coord
-  real(dp), allocatable :: POINT(:,:,:,:)  ! (ITALX, ITALY, ITALZ, 3) - sampling grid points
-  real(dp), allocatable :: HAS(:,:,:,:)    ! (ITALX, ITALY, ITALZ, 3) - sampled induced velocities
+  real(dp), allocatable :: GAMME(:,:,:)
+  real(dp), allocatable :: SWB(:,:,:)
+  real(dp), allocatable :: UREL(:,:)
+  real(dp), allocatable :: ALFA(:,:)
+  real(dp), allocatable :: ALFAF(:,:)
+  real(dp), allocatable :: CL(:,:)
+  real(dp), allocatable :: CD(:,:)
+  real(dp), allocatable :: H1(:,:,:,:)
+  real(dp), allocatable :: H2(:,:,:,:)
+  real(dp), allocatable :: V1(:,:,:,:)
+  real(dp), allocatable :: V2(:,:,:,:)
+  real(dp), allocatable :: VIND(:,:)
+  real(dp), allocatable :: BLSNIT(:,:,:)
+  real(dp), allocatable :: DSPAN(:)
+  real(dp), allocatable :: BETA(:)
+  real(dp), allocatable :: FI0(:)
+  real(dp), allocatable :: CRANK(:)
+  real(dp), allocatable :: RS(:,:)
+  real(dp), allocatable :: POINT(:,:,:,:)
+  real(dp), allocatable :: HAS(:,:,:,:)
 
 contains
 
   subroutine allocate_state(nb_in, nol_in, kmnet_in, ierr)
     integer, intent(in) :: nb_in, nol_in, kmnet_in
     integer, intent(out) :: ierr
-    integer :: ios
+    integer :: ios, nol1
 
     ierr = 0
     if (nb_in <= 0 .or. nol_in <= 0 .or. kmnet_in <= 0) then
@@ -53,6 +65,31 @@ contains
     NB = nb_in
     NOL = nol_in
     KMNET = kmnet_in
+    NPSI = 0
+    IR = 0
+    IRUN = 0
+    KMAKS = 0
+    ITALX = 0
+    ITALY = 0
+    ITALZ = 0
+    RO = 1.225_dp
+    ANY = 1.5e-5_dp
+    C = 0.0_dp
+    DTETA = 0.0_dp
+    DT = 0.0_dp
+    OMEGA = 0.0_dp
+    EPS1 = 1.0e-6_dp
+    RC = 0.0_dp
+    HSTAR = 0.0_dp
+    FI0DOT = 0.0_dp
+    UINF = 0.0_dp
+    H0 = 0.0_dp
+    A = 0.0_dp
+    B = 0.0_dp
+    BSAF = 0.0_dp
+    BOOLPRINT = .false.
+
+    nol1 = NOL + 1
 
     allocate( GAMME(NB, NOL, KMNET), stat=ios )
     if (ios /= 0) then
@@ -103,20 +140,106 @@ contains
     end if
     CD = 0.0_dp
 
+    allocate( H1(NB, nol1, KMNET, 3), stat=ios )
+    if (ios /= 0) then
+      ierr = 9
+      return
+    end if
+    H1 = 0.0_dp
+
+    allocate( H2(NB, nol1, KMNET, 3), stat=ios )
+    if (ios /= 0) then
+      ierr = 10
+      return
+    end if
+    H2 = 0.0_dp
+
+    allocate( V1(NB, nol1, KMNET, 3), stat=ios )
+    if (ios /= 0) then
+      ierr = 11
+      return
+    end if
+    V1 = 0.0_dp
+
+    allocate( V2(NB, nol1, KMNET, 3), stat=ios )
+    if (ios /= 0) then
+      ierr = 12
+      return
+    end if
+    V2 = 0.0_dp
+
+    allocate( VIND(nol1, 3), stat=ios )
+    if (ios /= 0) then
+      ierr = 13
+      return
+    end if
+    VIND = 0.0_dp
+
+    allocate( BLSNIT(NB, nol1, 3), stat=ios )
+    if (ios /= 0) then
+      ierr = 14
+      return
+    end if
+    BLSNIT = 0.0_dp
+
+    allocate( DSPAN(NOL), stat=ios )
+    if (ios /= 0) then
+      ierr = 15
+      return
+    end if
+    DSPAN = 0.0_dp
+
+    allocate( BETA(NOL), stat=ios )
+    if (ios /= 0) then
+      ierr = 16
+      return
+    end if
+    BETA = 0.0_dp
+
+    allocate( FI0(NOL), stat=ios )
+    if (ios /= 0) then
+      ierr = 17
+      return
+    end if
+    FI0 = 0.0_dp
+
+    allocate( CRANK(NB), stat=ios )
+    if (ios /= 0) then
+      ierr = 18
+      return
+    end if
+    CRANK = 0.0_dp
+
+    allocate( RS(300, 2), stat=ios )
+    if (ios /= 0) then
+      ierr = 19
+      return
+    end if
+    RS = 0.0_dp
+
   end subroutine allocate_state
 
   subroutine deallocate_state()
-    implicit none
-    if (allocated(GAMME)) deallocate(GAMME)
-    if (allocated(SWB))   deallocate(SWB)
-    if (allocated(UREL))  deallocate(UREL)
-    if (allocated(ALFA))  deallocate(ALFA)
-    if (allocated(ALFAF)) deallocate(ALFAF)
-    if (allocated(CL))    deallocate(CL)
-    if (allocated(CD))    deallocate(CD)
-    if (allocated(H1))    deallocate(H1)
-    if (allocated(POINT)) deallocate(POINT)
-    if (allocated(HAS))   deallocate(HAS)
+    if (allocated(GAMME))  deallocate(GAMME)
+    if (allocated(SWB))    deallocate(SWB)
+    if (allocated(UREL))   deallocate(UREL)
+    if (allocated(ALFA))   deallocate(ALFA)
+    if (allocated(ALFAF))  deallocate(ALFAF)
+    if (allocated(CL))     deallocate(CL)
+    if (allocated(CD))     deallocate(CD)
+    if (allocated(H1))     deallocate(H1)
+    if (allocated(H2))     deallocate(H2)
+    if (allocated(V1))     deallocate(V1)
+    if (allocated(V2))     deallocate(V2)
+    if (allocated(VIND))   deallocate(VIND)
+    if (allocated(BLSNIT)) deallocate(BLSNIT)
+    if (allocated(DSPAN))  deallocate(DSPAN)
+    if (allocated(BETA))   deallocate(BETA)
+    if (allocated(FI0))    deallocate(FI0)
+    if (allocated(CRANK))  deallocate(CRANK)
+    if (allocated(RS))     deallocate(RS)
+    if (allocated(POINT))  deallocate(POINT)
+    if (allocated(HAS))    deallocate(HAS)
     NB = 0
     NOL = 0
     KMNET = 0
@@ -125,7 +248,6 @@ contains
     ITALZ = 0
   end subroutine deallocate_state
 
-  ! Allocate mesh grids used by BSA / BSPD3 / WIND
   subroutine allocate_mesh(ix, iy, iz, ierr)
     integer, intent(in) :: ix, iy, iz
     integer, intent(out) :: ierr
@@ -154,16 +276,12 @@ contains
       return
     end if
     HAS = 0.0_dp
+
   end subroutine allocate_mesh
 
   subroutine deallocate_mesh()
-    implicit none
-    if (allocated(POINT)) then
-      deallocate(POINT)
-    end if
-    if (allocated(HAS)) then
-      deallocate(HAS)
-    end if
+    if (allocated(POINT)) deallocate(POINT)
+    if (allocated(HAS))   deallocate(HAS)
     ITALX = 0
     ITALY = 0
     ITALZ = 0

@@ -2,7 +2,7 @@
 REM build.bat
 REM Project: VDaRT (Darrieus 3D) - build with layout enforcement using shared tools
 REM Author: U.S.Paulsen
-REM Date: 2026-02-25
+REM Date: 2026-02-26
 
 if "%TOOLS_DIR%"=="" (
   REM default fallback for shared tools
@@ -23,17 +23,21 @@ del /Q *.o 2>nul
 del /Q *.exe 2>nul
 
 echo Compiling modules (order matters)...
-ifx -c vdart_kinds_mod.f90 || goto :err
-ifx -c vdart_io_mod.f90    || goto :err
-ifx -c vdart_biot_mod.f90  || goto :err
-ifx -c vdart_aero_mod.f90  || goto :err
-ifx -c vdart_state_mod.f90 || goto :err
-ifx -c vdart_bsa_mod.f90   || goto :err
-ifx -c vdart_vortex_mod.f90|| goto :err
-ifx -c test_vortex.f90     || goto :err
+ifx -c vdart_kinds_mod.f90    || goto :err
+ifx -c vdart_io_mod.f90       || goto :err
+ifx -c vdart_biot_mod.f90     || goto :err
+ifx -c vdart_aero_mod.f90     || goto :err
+ifx -c vdart_state_mod.f90    || goto :err
+ifx -c vdart_bsa_mod.f90      || goto :err
+ifx -c vdart_wind_mod.f90     || goto :err
+ifx -c vdart_flyt_mod.f90     || goto :err
+ifx -c vdart_start_mod.f90    || goto :err
+ifx -c vdart_nethas_mod.f90   || goto :err
+ifx -c vdart_vortex_mod.f90   || goto :err
+ifx -c test_vortex.f90        || goto :err
 
 echo Linking...
-ifx vdart_kinds_mod.obj vdart_io_mod.obj vdart_biot_mod.obj vdart_aero_mod.obj vdart_state_mod.obj vdart_bsa_mod.obj vdart_vortex_mod.obj test_vortex.obj -o test_vortex.exe || goto :err
+ifx vdart_kinds_mod.obj vdart_io_mod.obj vdart_biot_mod.obj vdart_aero_mod.obj vdart_state_mod.obj vdart_bsa_mod.obj vdart_wind_mod.obj vdart_flyt_mod.obj vdart_start_mod.obj vdart_nethas_mod.obj vdart_vortex_mod.obj test_vortex.obj -o test_vortex.exe || goto :err
 
 echo Build succeeded: test_vortex.exe created.
 goto :done

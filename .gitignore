@@ -60,3 +60,6 @@ results/
 
 # Template files
 GITHUB_ISSUES_TEMPLATE.md
+
+# Intel Fortran object files (Windows)
+*.obj
